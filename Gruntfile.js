@@ -16,10 +16,20 @@ module.exports = function(grunt) {
     },
     // Sass -> CSS
     sass: {
-      dist: {
+      dev: {
         options: {
           style: 'expanded',
           compass: true
+        },
+        files: {
+            "<%= project.build %>/styles.css": "<%= project.css %>/styles.sass"
+        }
+      },
+      build: {
+        options: {
+          style: 'expanded',
+          compass: true,
+          sourcemap: 'none'
         },
         files: {
             "<%= project.build %>/styles.css": "<%= project.css %>/styles.sass"
@@ -28,10 +38,22 @@ module.exports = function(grunt) {
     },
     // Coffeescript -> JS
     coffee: {
-      compile: {
+      dev: {
         options: {
           bare: true,
           sourceMap: true
+        },
+        expand: true,
+        flatten: false,
+        cwd: '<%= project.app %>/',
+        src: ['**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
+        dest: '<%= project.build %>/',
+        ext: '.js'
+      },
+      build: {
+        options: {
+          bare: true,
+          sourceMap: false
         },
         expand: true,
         flatten: false,
@@ -56,10 +78,10 @@ module.exports = function(grunt) {
         }]
       }
     },
-    // Adds any relevate autoprefixers supporting IE 9 and above
+    // Adds any relevate autoprefixers supporting IE 11 and above
     autoprefixer: {
       options: {
-        browsers: ["> 1%", "ie > 8"],
+        browsers: ["> 1%", "ie > 10"],
         map: true
       },
       target: {
@@ -86,14 +108,14 @@ module.exports = function(grunt) {
       },
       target: {
         files: {
-          "<%= project.build %>/scripts/portfolio.min.js":   ["<%= project.build %>/scripts/portfolio.js"]
+          "<%= project.build %>/scripts/app.min.js":   ["<%= project.build %>/scripts/app.js"]
         }
       }
     },
     notify: {
       sass:{
         options:{
-          title: "Portfolio Project",
+          title: "Grunt",
           message: "Sass Compiled Successfully.",
           duration: 2,
           max_jshint_notifications: 1
@@ -101,7 +123,7 @@ module.exports = function(grunt) {
       },
       coffee:{
         options:{
-          title: "Portfolio Project",
+          title: "Grunt",
           message: "Coffeescript Compiled Successfully.",
           duration: 2,
           max_jshint_notifications: 1
@@ -109,7 +131,7 @@ module.exports = function(grunt) {
       },
       jade:{
         options:{
-          title: "Portfolio Project",
+          title: "Grunt",
           message: "Jade Compiled Successfully.",
           duration: 2,
           max_jshint_notifications: 1
@@ -117,7 +139,7 @@ module.exports = function(grunt) {
       },
       uglify:{
         options:{
-          title: "Portfolio Project",
+          title: "Grunt",
           message: "JS Minified Successfully.",
           duration: 2,
           max_jshint_notifications: 1
@@ -129,7 +151,7 @@ module.exports = function(grunt) {
       main: {
         expand: true,
         cwd: '<%= project.app %>/',
-        src: 'content/**',
+        src: ['content/**', 'scripts/vendor/*.js'],
         dest: '<%= project.build %>/',
       }
     },
@@ -172,7 +194,8 @@ module.exports = function(grunt) {
         bsFiles: {
           src : [
               '<%= project.build %>/styles.min.css',
-              '<%= project.build %>/**/*.js'
+              '<%= project.build %>/**/*.js',
+              '<%= project.build %>/**/*.html'
           ]
         },
         options: {
@@ -185,24 +208,25 @@ module.exports = function(grunt) {
   
   // Default task(s).
   grunt.registerTask('default', [
-    'browserSync',
     'clean',
-    'copy',
-    'sass',
-    'coffee',
-    'jade',
+    'sass:dev',
     'autoprefixer',
     'cssmin',
+    'jade',
+    'coffee:dev',
     'uglify',
+    'copy',
+    'browserSync',
     'watch'
   ]);
   grunt.registerTask('build', [
-    'copy',
-    'sass',
-    'coffee',
-    'jade',
+    'clean',
+    'sass:build',
     'autoprefixer',
     'cssmin',
-    'uglify'
+    'jade',
+    'coffee:build',
+    'uglify',
+    'copy'
   ]);
 };
