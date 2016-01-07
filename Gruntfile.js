@@ -74,7 +74,7 @@ module.exports = function(grunt) {
         ext: '.js'
       }
     },
-    // Jade -> HTML
+    // Jade -> HTML. Ignores any jade files with an underscore in the filename
     jade: {
       compile: {
         options: {
@@ -163,6 +163,14 @@ module.exports = function(grunt) {
           duration: 2,
           max_jshint_notifications: 1
         }
+      },
+      images:{
+        options:{
+          title: "Grunt",
+          message: "Images Copied Successfully.",
+          duration: 2,
+          max_jshint_notifications: 1
+        }
       }
     },
     // Copies remaining files to places other tasks can use
@@ -172,6 +180,15 @@ module.exports = function(grunt) {
         cwd: '<%= project.app %>/',
         src: ['content/**', 'scripts/vendor/*.js'],
         dest: '<%= project.build %>/',
+      }
+    },
+    sync: {
+      images: {
+        files: [{
+          cwd: '<%= project.app %>/', 
+          src: ['images/*.{jpg,png,gif,svg}'],
+          dest: '<%= project.build %>/'
+        }]
       }
     },
     // Empties folders to start fresh
@@ -188,7 +205,7 @@ module.exports = function(grunt) {
     watch: {
       sass: {
         files: ['<%= project.css %>/**/*.{scss,sass}','<%= project.components %>/**/*.{scss,sass}'],
-        tasks: ['sass','notify:sass']
+        tasks: ['sass:dev','notify:sass']
       },
       ts: {
         files: ['<%= project.js %>/**/*.ts','<%= project.components %>/**/*.ts'],
@@ -196,7 +213,7 @@ module.exports = function(grunt) {
       },
       coffee: {
         files: ['<%= project.js %>/**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
-        tasks: ['coffee', 'notify:coffee']
+        tasks: ['coffee:dev', 'notify:coffee']
       },
       jade: {
         files: ['<%= project.app %>/**/*.jade'],
@@ -209,6 +226,10 @@ module.exports = function(grunt) {
       uglify: {
         files: ['<%= project.build %>/**/*.js'],
         tasks:['uglify','notify:uglify']
+      },
+      images: {
+        files: ['<%= project.app %>/content/**/*'],
+        tasks: ['sync:images', 'notify:images']
       }
     },
     // Server setup
@@ -218,6 +239,7 @@ module.exports = function(grunt) {
           src : [
               '<%= project.build %>/styles.min.css',
               '<%= project.build %>/**/*.js',
+              '<%= project.build %>/content/**/*',
               '<%= project.build %>/**/*.html'
           ]
         },
