@@ -36,6 +36,17 @@ module.exports = function(grunt) {
         }
       }
     },
+    // Typescript -> JS
+    ts: {
+      options: {
+        target: 'es6',
+        sourceMap: true
+      },
+      dev: {
+        src: ['<%= project.js %>/**/*.ts','<%= project.components %>/**/*.ts'],
+        outDir: '<%= project.build %>/scripts/'
+      }
+    },
     // Coffeescript -> JS
     coffee: {
       dev: {
@@ -121,6 +132,14 @@ module.exports = function(grunt) {
           max_jshint_notifications: 1
         }
       },
+      ts:{
+        options:{
+          title: "Grunt",
+          message: "Typescript Compiled Successfully.",
+          duration: 2,
+          max_jshint_notifications: 1
+        }
+      },
       coffee:{
         options:{
           title: "Grunt",
@@ -171,6 +190,10 @@ module.exports = function(grunt) {
         files: ['<%= project.css %>/**/*.{scss,sass}','<%= project.components %>/**/*.{scss,sass}'],
         tasks: ['sass','notify:sass']
       },
+      ts: {
+        files: ['<%= project.js %>/**/*.ts','<%= project.components %>/**/*.ts'],
+        tasks: ['ts', 'notify:ts']
+      },
       coffee: {
         files: ['<%= project.js %>/**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
         tasks: ['coffee', 'notify:coffee']
@@ -209,24 +232,25 @@ module.exports = function(grunt) {
   // Default task(s).
   grunt.registerTask('default', [
     'clean',
+    'copy',
     'sass:dev',
     'autoprefixer',
     'cssmin',
     'jade',
+    'ts:dev',
     'coffee:dev',
-    'uglify',
-    'copy',
     'browserSync',
     'watch'
   ]);
   grunt.registerTask('build', [
     'clean',
+    'copy',
     'sass:build',
     'autoprefixer',
     'cssmin',
     'jade',
+    'ts:dev',
     'coffee:build',
-    'uglify',
-    'copy'
+    'uglify'
   ]);
 };
