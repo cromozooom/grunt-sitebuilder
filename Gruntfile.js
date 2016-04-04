@@ -1,4 +1,4 @@
-'use strict';
+'use_strict';
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
@@ -18,21 +18,20 @@ module.exports = function(grunt) {
     sass: {
       dev: {
         options: {
-          style: 'expanded',
-          compass: true
+          outputStyle: 'compact',
+          outFile: '<%= project.build %>/style.css',
+          sourceMap: true
         },
         files: {
-            "<%= project.build %>/styles.css": "<%= project.css %>/styles.sass"
+            "<%= project.build %>/style.css": "<%= project.css %>/style.sass"
         }
       },
       build: {
         options: {
-          style: 'expanded',
-          compass: true,
-          sourcemap: 'none'
+          outputStyle: 'compressed'
         },
         files: {
-            "<%= project.build %>/styles.css": "<%= project.css %>/styles.sass"
+            "<%= project.build %>/style.css": "<%= project.css %>/style.sass"
         }
       }
     },
@@ -45,10 +44,10 @@ module.exports = function(grunt) {
         },
         expand: true,
         flatten: false,
-        cwd: '<%= project.app %>/',
-        src: ['**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
-        dest: '<%= project.build %>/',
-        ext: '.js'
+        ext: '.js',
+        files: {
+          '<%= project.build %>/scripts/app.js': ['<%= project.js %>/app.coffee', '<%= project.components %>/**/*.coffee']
+        }
       },
       build: {
         options: {
@@ -57,10 +56,10 @@ module.exports = function(grunt) {
         },
         expand: true,
         flatten: false,
-        cwd: '<%= project.app %>/',
-        src: ['**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
-        dest: '<%= project.build %>/',
-        ext: '.js'
+        ext: '.js',
+        files: {
+          '<%= project.build %>/scripts/app.js': ['<%= project.js %>/app.coffee', '<%= project.components %>/**/*.coffee']
+        }
       }
     },
     // Jade -> HTML
@@ -86,29 +85,20 @@ module.exports = function(grunt) {
       },
       target: {
         files: {
-            "<%= project.build %>/styles.css": "<%= project.build %>/styles.css"
+            "<%= project.build %>/style.css": "<%= project.build %>/style.css"
         }
       }
     },
-    // Minify CSS
-    cssmin: {
+    // JS Error checking
+    jshint: {
+      files: ['Gruntfile.js', '<%= project.build %>/scripts/app.js'],
       options: {
-        sourceMap: true
-      },
-      target: {
-        files: {
-          "<%= project.build %>/styles.min.css": ['<%= project.build %>/styles.css']
-        }
-      }
-    },
-    // Minify JS
-    uglify: {
-      options: {
-        mangle: true
-      },
-      target: {
-        files: {
-          "<%= project.build %>/scripts/app.min.js":   ["<%= project.build %>/scripts/app.js"]
+        // options here to override JSHint defaults
+        globals: {
+          jQuery: true,
+          console: true,
+          module: true,
+          document: true
         }
       }
     },
@@ -137,22 +127,13 @@ module.exports = function(grunt) {
           max_jshint_notifications: 1
         }
       },
-      uglify:{
+      content:{
         options:{
           title: "Grunt",
-          message: "JS Minified Successfully.",
+          message: "Content Updated or Copied Successfully.",
           duration: 2,
           max_jshint_notifications: 1
         }
-      }
-    },
-    // Copies remaining files to places other tasks can use
-    copy: {
-      main: {
-        expand: true,
-        cwd: '<%= project.app %>/',
-        src: ['content/**', 'scripts/vendor/*.js'],
-        dest: '<%= project.build %>/',
       }
     },
     // Empties folders to start fresh
@@ -166,6 +147,24 @@ module.exports = function(grunt) {
         }]
       }
     },
+    // Copies remaining files to places other tasks can use
+    copy: {
+      main: {
+        expand: true,
+        cwd: '<%= project.app %>/',
+        src: ['content/**', 'scripts/vendor/*.js', 'robots.txt'],
+        dest: '<%= project.build %>/',
+      }
+    },
+    sync: {
+      content: {
+        files: [{
+          cwd: '<%= project.app %>/', 
+          src: ['content/**/*', 'scripts/vendor/*.js'],
+          dest: '<%= project.build %>/'
+        }],
+      }
+    },
     watch: {
       sass: {
         files: ['<%= project.css %>/**/*.{scss,sass}','<%= project.components %>/**/*.{scss,sass}'],
@@ -175,17 +174,21 @@ module.exports = function(grunt) {
         files: ['<%= project.js %>/**/*.{coffee,litcoffee}','<%= project.components %>/**/*.{coffee,litcoffee}'],
         tasks: ['coffee', 'notify:coffee']
       },
+      jshint: {
+        files: ['<%= project.build %>/scripts/app.js'],
+        tasks: ['jshint']
+      },
       jade: {
         files: ['<%= project.app %>/**/*.jade'],
         tasks: ['jade', 'notify:jade']
       },
       autoprefixer:{
-        files: ['<%= project.build %>/styles.css'],
-        tasks: ['autoprefixer', 'cssmin']
+        files: ['<%= project.build %>/style.css'],
+        tasks: ['autoprefixer']
       },
-      uglify: {
-        files: ['<%= project.build %>/**/*.js'],
-        tasks:['uglify','notify:uglify']
+      content: {
+        files: ['<%= project.app %>/content/**/*', '<%= project.js %>/vendor/*.js'],
+        tasks: ['sync:content', 'notify:content']
       }
     },
     // Server setup
@@ -193,8 +196,9 @@ module.exports = function(grunt) {
       dev: {
         bsFiles: {
           src : [
-              '<%= project.build %>/styles.min.css',
+              '<%= project.build %>/style.css',
               '<%= project.build %>/**/*.js',
+              '<%= project.build %>/content/**/*',
               '<%= project.build %>/**/*.html'
           ]
         },
@@ -209,24 +213,22 @@ module.exports = function(grunt) {
   // Default task(s).
   grunt.registerTask('default', [
     'clean',
+    'copy',
+    'jade',
     'sass:dev',
     'autoprefixer',
-    'cssmin',
-    'jade',
     'coffee:dev',
-    'uglify',
-    'copy',
+    'jshint',
     'browserSync',
     'watch'
   ]);
   grunt.registerTask('build', [
     'clean',
+    'copy',
+    'jade',
     'sass:build',
     'autoprefixer',
-    'cssmin',
-    'jade',
     'coffee:build',
-    'uglify',
-    'copy'
+    'jshint'
   ]);
 };

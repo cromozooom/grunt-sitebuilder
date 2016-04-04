@@ -1,1 +1,1 @@
-# Angular/React/Meteor code here
+# Angular/React/Meteor/JS code here
