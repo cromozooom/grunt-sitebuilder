@@ -15,8 +15,8 @@
     "grunt-php": ">=1.5.1",
     "grunt-sass": ">=1.1.0",
     "grunt-sync": ">=0.5.2",
-    "load-grunt-tasks": ">=3.4.1",
-    "node-sass": ">=3.4.2"
+    "load-grunt-tasks": ">=3.5.0",
+    "node-sass": ">=3.5.3"
   },
   "engines": {
     "node": ">=4.0"
